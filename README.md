@@ -21,7 +21,7 @@ bacteria reaching a threshold (for example, a 30-degree arc).
 9. The player wins if all bacteria are poisoned before any two different bacteria reach the
 threshold mentioned above.
 
-##  Bonus Features
+## Bonus Features
 
 1. The effect of the poison administered also propagates outward from the point of insertion of the position until all the bacteria are destroyed.
 2. When two bacteria cultures collide, the first one to appear on the circumference dominates and consumes the later generated bacteria.
