@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang = "en">
+    <head>
+        <meta charset = "utf-8" />
+        <title>Bug Zapper</title>
+        <link rel="stylesheet" type="text/css" href="css/main.css">
+    </head>
+    <body onload = "initGame()">
+
+        <div class = "canvasContainer">
+            <canvas id="gameSurface" width="600" height="600"> Your browser does not support HTML5</canvas>
+        </div>
+
+        <!-- we write it here instead of head because we want to call the js after
+        the canvas being initialized-->
+        <script src = "scripts/app.js"></script>
+
+        <p>Click the 'bacteria' to destroy</p>
+        <p>Each time a bacteria grows too big, you will lose a life</p>
+
+    </body>
+</html>
