@@ -24,10 +24,9 @@ var vertexShaderText = [
 	///////////////////////////////////
 	//       Game Variables	         //
 	///////////////////////////////////
-
-	//radius and size for game circle
-	var r = 0.8;
-	var i = 0.5;
+let r = 0.8;
+var generatedBacteria = [];
+let genBact = 0;
 
 var initGame = function(){
 
@@ -148,9 +147,102 @@ var initGame = function(){
 
 		// Drawing triangles
 		gl.clearColor(0.0,0.0,0.0,1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
+		//gl.clear(gl.COLOR_BUFFER_BIT);
 		// Draw the triangle 360*3, 3 layers of vertices (disk)
 		gl.drawArrays(gl.TRIANGLES, 0, 360*3);
+
+	}
+
+	//check if bacteria is colliding via radius
+	function isColliding(x1, y1, r1, x2, y2, r2){
+		/*
+			In order to check if the two bacteria are colliding we must:
+				1. Calculate the distance between (x1, y1) and (x2, y2)
+					a) this is done through the equation
+						sqrt(pow((x2-x1), 2) + pow((y2-y1), 2))
+				2. Consider the radius of the circles. In order to tell if the circles are touching we:
+					a) add the two radius together
+					b) subtract the added radius from the distance.
+				If distance is < 0 the bacteria are colliding.
+		*/
+		if((Math.sqrt(Math.pow((x2-x1), 2)+Math.pow((y2-y1), 2))-(r1+r2)) < 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	//////////////////////////////////
+	//		   Bacteria Class		//
+	//////////////////////////////////
+
+	class Bacteria {
+
+		//constructor for when id is specified
+		constructor(id){
+			this.id = id;
+		}
+
+		//method to randomly decide if int is positive or negative
+		randomizeInteger(num){
+			if(Math.random() >= 0.5){
+				num = num*-1;
+			}
+			return num;
+		}
+
+		//method for generating new random x and y values
+		newPointValues(){
+			this.angle = Math.random();
+			this.genX = this.randomizeInteger(r);
+			this.genY = this.randomizeInteger(r);
+			//determine which angle randomly
+			if(Math.random() >= 0.5){
+				this.trig = "cos";
+			}else{
+				this.trig = "sin";
+			}
+		}
+
+		genCircleValue(){
+			if (this.trig == "cos") {
+				this.x = this.genX*Math.cos(this.angle);
+				this.y = this.genY*Math.sin(this.angle);
+			} else {
+				this.x = this.genX*Math.sin(this.angle);
+				this.y = this.genY*Math.cos(this.angle);
+			}
+		}
+
+		//method for generating new bacteria circles
+		generate(){
+			//new random data for x and y
+			this.newPointValues();
+			//new x and y values along the game circle
+			this.genCircleValue();
+
+			//TODO: add in check for collision
+
+			this.r = 0.06;
+			//generate new colours
+			this.color = [Math.random() * (0.45), Math.random() * (0.45), Math.random() * (0.45), 0.8];
+			this.poisoned = false;
+			//this.consumed = [];
+			genBact++;
+
+		}
+
+		show(){
+
+			//TODO: add in checks here
+
+			drawCircle(this.x, this.y, this.r, this.color);
+		}
+
+		//TODO: delete bacteria
+		delete(){
+
+		}
 
 	}
 	
@@ -158,6 +250,11 @@ var initGame = function(){
 	//            Drawing           //
 	//////////////////////////////////
 	
-	drawCircle(0,0,0.8,[1.0, 1.0, 1.0, 1.0]);
+	drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
+
+	//TODO: implement game loop
+	generatedBacteria.push(new Bacteria(genBact))
+	generatedBacteria[0].generate();
+	generatedBacteria[0].show();
 	
 }
