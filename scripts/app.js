@@ -148,7 +148,6 @@ var initGame = function(){
 
 		// Drawing triangles
 		gl.clearColor(0.0,0.0,0.0,1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
 		// Draw the triangle 360*3, 3 layers of vertices (disk)
 		gl.drawArrays(gl.TRIANGLES, 0, 360*3);
 
@@ -158,6 +157,27 @@ var initGame = function(){
 	//            Drawing           //
 	//////////////////////////////////
 	
-	drawCircle(0,0,0.8,[1.0, 1.0, 1.0, 1.0]);
-	
+	drawCircle(0,0,0.8,[0.2, 0.2, 0.2, 1.0]);
+
+	//////////////////////////////////
+	//            Clicking           //
+	//////////////////////////////////
+
+	canvas.onmousedown = function(e, canvas){click(e, gameSurface);};
+
+	function click(e, canvas) {
+		var x = (e.clientX / canvas.clientWidth) * 2 - 1;
+		var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
+
+		console.log("Values are: " + x + " and " + y)
+
+	}
+
+	function distanceThreshold(x1, y1, r1, x2, y2, r2) {
+		if ((Math.sqrt(Math.pow((x2-x1), 2) + Math.pow((y2-y1), 2))) - (r1+r2) < 0){
+			return true;
+		}
+		return false;
+	}
+
 }
