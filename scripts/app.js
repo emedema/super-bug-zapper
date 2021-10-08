@@ -181,8 +181,7 @@ var initGame = function(){
 		//constructor for when id is specified
 		constructor(id){
 			this.id = id;
-			this.x = 0;
-			this.y = 0;
+			this.active = true; 
 		}
 
 		//method to randomly decide if int is positive or negative
@@ -237,7 +236,22 @@ var initGame = function(){
 		show(){
 
 			//TODO: add in checks here
-
+			if (this.active) this.r = this.r + 0.0002;
+			
+			for (i in generatedBacteria) {
+				if (this.id == generatedBacteria[i].id);
+				else{
+					if (isColliding(this.x, this.y, this.r, generatedBacteria[i].x, generatedBacteria[i].y, generatedBacteria[i].r)) {
+						this.r = this.r + generatedBacteria[i].r;
+						generatedBacteria[i].x = 0;
+						generatedBacteria[i].y = 0;
+						generatedBacteria[i].r = 0;
+						generatedBacteria[i].active = false;
+					}
+				}
+				
+			}
+		
 			drawCircle(this.x, this.y, this.r, this.color);
 		}
 
@@ -246,6 +260,7 @@ var initGame = function(){
 			this.r = 0;
 			this.x = 0;
 			this.y = 0;
+			this.active = false;
 			console.log("You sunk the battleship!");
 		}
 
@@ -267,6 +282,7 @@ var initGame = function(){
 
 			if (isColliding(x,y,0,k.x,k.y,k.r)) {
 				k.delete();
+				break;
 			}
 
 		}
@@ -276,7 +292,7 @@ var initGame = function(){
 	//       Initalize Game         //
 	//////////////////////////////////
 
-	for (i = 0; i < 10; i++) {
+	for (i = 0; i < 3; i++) {
 		generatedBacteria.push(new Bacteria(genBact))
 		generatedBacteria[i].generate();
 	}
@@ -286,12 +302,11 @@ var initGame = function(){
 	//////////////////////////////////	
 
 	function gameplay() {
+		// Draw game surface
 		drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
-
 		for (i in generatedBacteria) {
 			generatedBacteria[i].show();
 		}
-
 		requestAnimationFrame(gameplay);
 	}
 	requestAnimationFrame(gameplay);
