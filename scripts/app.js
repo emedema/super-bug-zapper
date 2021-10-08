@@ -217,14 +217,35 @@ var initGame = function(){
 
 		//method for generating new bacteria circles
 		generate(){
+			this.r = 0.06;
 			//new random data for x and y
 			this.newPointValues();
 			//new x and y values along the game circle
 			this.genCircleValue();
 
 			//TODO: add in check for collision
+			//check to avoid infinite loops, if too many bacteria to generate new one -> skip
+			let attempt = 0;
+			//iterate through bacteria already generated
+			for(let i = 0; i<generatedBacteria.length; i++){
+				//check to avoid infinite loop
+				if(attempt > 500){
+					console.log("Not enough area for new bacteria");
+					break;
+				}
 
-			this.r = 0.06;
+				//if there is a collision we need to generate new data again
+				//ensure it will loop through all the bacteria again
+				if(isColliding(this.x, this.y, this.r, generatedBacteria[i].x, generatedBacteria[i].y, generatedBacteria[i].r)){
+					this.newPointValues();
+					this.genCircleValue();
+					attempt++;
+					//ensure it will loop through all bacteria again
+					i = -1;
+				}
+			}
+
+			
 			//generate new colours
 			this.color = [Math.random() * (0.45), Math.random() * (0.45), Math.random() * (0.45), 0.8];
 			this.poisoned = false;
