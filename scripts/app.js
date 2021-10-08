@@ -181,7 +181,8 @@ var initGame = function(){
 		//constructor for when id is specified
 		constructor(id){
 			this.id = id;
-			this.active = true; 
+			this.active = true;
+			this.buffer = 0; 
 		}
 
 		//method to randomly decide if int is positive or negative
@@ -249,25 +250,21 @@ var initGame = function(){
 			//generate new colours
 			this.color = [Math.random() * (0.45), Math.random() * (0.45), Math.random() * (0.45), 0.8];
 			this.poisoned = false;
-			//this.consumed = [];
 			genBact++;
 
 		}
 
 		show(){
-
-			//TODO: add in checks here
-			if (this.active) this.r = this.r + 0.0002;
+			var smooth = this.buffer / 50;
+			if (this.active) this.r = this.r + 0.0001 + (smooth);
+			this.buffer -= smooth;
 			
 			for (i in generatedBacteria) {
 				if (this.id == generatedBacteria[i].id);
 				else{
 					if (isColliding(this.x, this.y, this.r, generatedBacteria[i].x, generatedBacteria[i].y, generatedBacteria[i].r)) {
-						this.r = this.r + generatedBacteria[i].r;
-						generatedBacteria[i].x = 0;
-						generatedBacteria[i].y = 0;
-						generatedBacteria[i].r = 0;
-						generatedBacteria[i].active = false;
+						this.buffer = generatedBacteria[i].r;
+						generatedBacteria[i].delete();
 					}
 				}
 				
@@ -276,7 +273,6 @@ var initGame = function(){
 			drawCircle(this.x, this.y, this.r, this.color);
 		}
 
-		//TODO: delete bacteria
 		delete(){
 			this.r = 0;
 			this.x = 0;
@@ -305,7 +301,7 @@ var initGame = function(){
 				k.delete();
 				break;
 			}
-
+			
 		}
 	}
 	
@@ -313,7 +309,7 @@ var initGame = function(){
 	//       Initalize Game         //
 	//////////////////////////////////
 
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < 10; i++) {
 		generatedBacteria.push(new Bacteria(genBact))
 		generatedBacteria[i].generate();
 	}
@@ -331,5 +327,4 @@ var initGame = function(){
 		requestAnimationFrame(gameplay);
 	}
 	requestAnimationFrame(gameplay);
-
 }
