@@ -24,13 +24,10 @@ var vertexShaderText = [
 	///////////////////////////////////
 	//       Game Variables	         //
 	///////////////////////////////////
-
-
 		let r = 0.8;
 		var generatedBacteria = [];
 		let genBact = 0;
-		let arcCheck = (2*Math.PI*r)*(15/360);
-		var destroyedBacteria = 0;
+		let parts = [];
 
 var initGame = function(){
 
@@ -41,6 +38,8 @@ var initGame = function(){
 
 	var canvas = document.getElementById('gameSurface');
 	var gl = canvas.getContext('webgl');
+	var particlesCanvas = document.getElementById('particles');
+	var partCanvas = particlesCanvas.getContext('2d')
 
 	if (!gl){
 		console.log('webgl not supported, falling back on experimental-webgl');
@@ -176,6 +175,44 @@ var initGame = function(){
 		}
 	}
 
+	function createExplosion(bacteria){
+		//convert bacteria data to canvas data so we can know where things are
+		/*
+			I cannot figure out these equations
+			X_clip = -1 + (2*x_canvas)/w
+			Y_clip = -1 + 2(h-y_canvas)/h
+		*/
+		let bacteriaX = (bacteria.x + 2/75 + 1)*300;
+		let bacteriaY = -1 * (bacteria.y-1) * 300 - 8; 
+		let r = (((bacteria.x + bacteria.r) + 2/75 + 1) * 300) - bacteriaX;
+		let num = 0;
+		let partColor = bacteria.color;
+
+		for(let x = 0; x < r; x++){
+			for(let y = 0; y < r; y++){
+				if(num % 2 == 0){
+					let partX = bacteriaX + x;
+					let partY = bacteriaY + y;
+					let partX2 = bacteriaX - x;
+					let partY2 = bacteriaY - y;
+
+					//create a particle for each quarter of the bacteria
+					let part = new Particle(partX, partY, 5, partColor);
+					parts.push(part);
+					part = new Particle(partX2, partY2, 5, partColor);
+					parts.push(part);
+					part = new Particle(partX, partY2, 5, partColor);
+					parts.push(part);
+					part = new Particle(partX2, partY, 5, partColor);
+					parts.push(part);
+
+				}
+				num++;
+			}
+		}
+
+	}
+
 	//////////////////////////////////
 	//		   Bacteria Class		//
 	//////////////////////////////////
@@ -222,7 +259,7 @@ var initGame = function(){
 
 		//method for generating new bacteria circles
 		generate(){
-			this.r = 0.06;
+			this.r = 0.05;
 			//new random data for x and y
 			this.newPointValues();
 			//new x and y values along the game circle
@@ -273,12 +310,7 @@ var initGame = function(){
 				}
 				
 			}
-
-			if (this.r >= arcCheck) {
-				lives--; 
-				this.delete();
-			}
-
+		
 			drawCircle(this.x, this.y, this.r, this.color);
 		}
 
@@ -287,40 +319,69 @@ var initGame = function(){
 			this.x = 0;
 			this.y = 0;
 			this.active = false;
-			destroyedBacteria++;
-			console.log(destroyedBacteria);
+			console.log("You sunk the battleship!");
 		}
 
 	}
 
 	//////////////////////////////////
-	//            Clicking           //
+	//         Particle Class       //
+	//////////////////////////////////
+
+
+	class Particle{
+		constructor(x, y, r, color){
+			this.x = x;
+			this.y = y;
+			this.r = r + Math.random() * 5;
+			//using traditional javascript animation -> colour needs to be rgba
+			this.color ="rgba(" + Math.round((1*color[0]) * 255) + "," + Math.round((1*color[1]) * 255) + "," + Math.round((1*color[2]) * 255) + "," + Math.random()*0.95 + ")"
+			this.speed = {x: -1 + Math.random() *5, y: -1 + Math.random() * 2}
+			this.life = 20 + Math.random() * 10;
+		}
+		show(){
+			//draw if != life and its not too small
+			if(this.life > 0 && this.r > 0){
+				partCanvas.beginPath();
+				partCanvas.rect(this.x, this.y, this.r, Math.PI * 2);
+				partCanvas.fillStyle = this.color;
+				partCanvas.fill();
+
+				// Update data
+				this.life--;
+				this.r -= 0.60;
+				this.x += this.speed.x;
+				this.y += this.speed.y;
+			}
+		}
+	}
+
+	//////////////////////////////////
+	//            Clicking          //
 	//////////////////////////////////
 
 	canvas.onmousedown = function(e, canvas){click(e, gameSurface);};
 
 	function click(e, canvas) {
-		var x = (e.clientX / canvas.clientWidth) * 2 - 1;
-		var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
 		for (i in generatedBacteria) {
 			k = generatedBacteria[i]
-			
+			var x = (e.clientX / canvas.clientWidth) * 2 - 1;
+			var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
+
 			console.log("Values are: " + x + " and " + y);
 
 			if (isColliding(x,y,0,k.x,k.y,k.r)) {
+				createExplosion(k);
 				k.delete();
 				break;
 			}
-
+			
 		}
 	}
 	
 	//////////////////////////////////
 	//       Initalize Game         //
 	//////////////////////////////////
-
-	var lifeCounter = document.getElementById("lives");
-	var lives = 2;
 
 	for (i = 0; i < 10; i++) {
 		generatedBacteria.push(new Bacteria(genBact))
@@ -332,23 +393,17 @@ var initGame = function(){
 	//////////////////////////////////	
 
 	function gameplay() {
-		if (destroyedBacteria >= 10) {
-			document.getElementById("gameOver").style.color = "green";
-			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
+		// Draw game surface
+		drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
+		for (i in generatedBacteria) {
+			generatedBacteria[i].show();
 		}
-		if (lives > 0) {			
-			// Draw game surface
-			drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
-			for (i in generatedBacteria) {
-				generatedBacteria[i].show();
-				lifeCounter.innerHTML = lives;
-			}
-			requestAnimationFrame(gameplay);
+		// Loop through all particles to draw
+		partCanvas.clearRect(0, 0, canvas.width, canvas.height);
+		for(i in parts) {
+			parts[i].show();
 		}
-		else if (lives <= 0) {
-			document.getElementById("gameOver").innerHTML = "Game over! Try again!";
-		}
+		requestAnimationFrame(gameplay);
 	}
 	requestAnimationFrame(gameplay);
-
 }
