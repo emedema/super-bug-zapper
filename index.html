@@ -7,6 +7,8 @@
     </head>
     <body onload = "initGame()">
 
+        <h1 id="gameOver" style="color:red; font-size: xx-large; font-weight: 900;"></h1>
+
         <div class = "canvasContainer">
             <canvas id="gameSurface" width="600" height="600"> Your browser does not support HTML5</canvas>
         </div>
@@ -17,6 +19,7 @@
 
         <p>Click the 'bacteria' to destroy</p>
         <p>Each time a bacteria grows too big, you will lose a life</p>
+        <p id="lives"></p>
 
     </body>
 </html>

@@ -24,9 +24,13 @@ var vertexShaderText = [
 	///////////////////////////////////
 	//       Game Variables	         //
 	///////////////////////////////////
+
+
 		let r = 0.8;
 		var generatedBacteria = [];
 		let genBact = 0;
+		let arcCheck = (2*Math.PI*r)*(15/360);
+		var destroyedBacteria = 0;
 
 var initGame = function(){
 
@@ -269,7 +273,12 @@ var initGame = function(){
 				}
 				
 			}
-		
+
+			if (this.r >= arcCheck) {
+				lives--; 
+				this.delete();
+			}
+
 			drawCircle(this.x, this.y, this.r, this.color);
 		}
 
@@ -278,7 +287,8 @@ var initGame = function(){
 			this.x = 0;
 			this.y = 0;
 			this.active = false;
-			console.log("You sunk the battleship!");
+			destroyedBacteria++;
+			console.log(destroyedBacteria);
 		}
 
 	}
@@ -290,24 +300,27 @@ var initGame = function(){
 	canvas.onmousedown = function(e, canvas){click(e, gameSurface);};
 
 	function click(e, canvas) {
+		var x = (e.clientX / canvas.clientWidth) * 2 - 1;
+		var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
 		for (i in generatedBacteria) {
 			k = generatedBacteria[i]
-			var x = (e.clientX / canvas.clientWidth) * 2 - 1;
-			var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
-
+			
 			console.log("Values are: " + x + " and " + y);
 
 			if (isColliding(x,y,0,k.x,k.y,k.r)) {
 				k.delete();
 				break;
 			}
-			
+
 		}
 	}
 	
 	//////////////////////////////////
 	//       Initalize Game         //
 	//////////////////////////////////
+
+	var lifeCounter = document.getElementById("lives");
+	var lives = 2;
 
 	for (i = 0; i < 10; i++) {
 		generatedBacteria.push(new Bacteria(genBact))
@@ -319,12 +332,23 @@ var initGame = function(){
 	//////////////////////////////////	
 
 	function gameplay() {
-		// Draw game surface
-		drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
-		for (i in generatedBacteria) {
-			generatedBacteria[i].show();
+		if (destroyedBacteria >= 10) {
+			document.getElementById("gameOver").style.color = "green";
+			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
 		}
-		requestAnimationFrame(gameplay);
+		if (lives > 0) {			
+			// Draw game surface
+			drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
+			for (i in generatedBacteria) {
+				generatedBacteria[i].show();
+				lifeCounter.innerHTML = lives;
+			}
+			requestAnimationFrame(gameplay);
+		}
+		else if (lives <= 0) {
+			document.getElementById("gameOver").innerHTML = "Game over! Try again!";
+		}
 	}
 	requestAnimationFrame(gameplay);
+
 }
