@@ -7,16 +7,21 @@
     </head>
     <body onload = "initGame()">
 
-        <div class = "canvasContainer">
+        <h1 id="gameOver" style="color:red; font-size: xx-large; font-weight: 900;"></h1>
+
+        <div id = "canvasContainer">
             <canvas id="gameSurface" width="600" height="600"> Your browser does not support HTML5</canvas>
+            <canvas id="particles" width="600" height="600"></canvas>
         </div>
 
         <!-- we write it here instead of head because we want to call the js after
         the canvas being initialized-->
         <script src = "scripts/app.js"></script>
-
-        <p>Click the 'bacteria' to destroy</p>
-        <p>Each time a bacteria grows too big, you will lose a life</p>
+        <div class = "textContainer">
+            <p>Click the 'bacteria' to destroy</p>
+            <p>Each time a bacteria grows too big, you will lose a life</p>
+            <p id="lives"></p>
+        </div>
 
     </body>
 </html>

@@ -24,10 +24,10 @@ var vertexShaderText = [
 	///////////////////////////////////
 	//       Game Variables	         //
 	///////////////////////////////////
-
-	//radius and size for game circle
-	var r = 0.8;
-	var i = 0.5;
+		let r = 0.8;
+		var generatedBacteria = [];
+		let genBact = 0;
+		let parts = [];
 
 var initGame = function(){
 
@@ -38,6 +38,8 @@ var initGame = function(){
 
 	var canvas = document.getElementById('gameSurface');
 	var gl = canvas.getContext('webgl');
+	var particlesCanvas = document.getElementById('particles');
+	var partCanvas = particlesCanvas.getContext('2d')
 
 	if (!gl){
 		console.log('webgl not supported, falling back on experimental-webgl');
@@ -148,16 +150,260 @@ var initGame = function(){
 
 		// Drawing triangles
 		gl.clearColor(0.0,0.0,0.0,1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT);
+		//gl.clear(gl.COLOR_BUFFER_BIT);
 		// Draw the triangle 360*3, 3 layers of vertices (disk)
 		gl.drawArrays(gl.TRIANGLES, 0, 360*3);
 
 	}
+
+	//check if bacteria is colliding via radius
+	function isColliding(x1, y1, r1, x2, y2, r2){
+		/*
+			In order to check if the two bacteria are colliding we must:
+				1. Calculate the distance between (x1, y1) and (x2, y2)
+					a) this is done through the equation
+						sqrt(pow((x2-x1), 2) + pow((y2-y1), 2))
+				2. Consider the radius of the circles. In order to tell if the circles are touching we:
+					a) add the two radius together
+					b) subtract the added radius from the distance.
+				If distance is < 0 the bacteria are colliding.
+		*/
+		if((Math.sqrt(Math.pow((x2-x1), 2)+Math.pow((y2-y1), 2))-(r1+r2)) < 0){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	function createExplosion(bacteria){
+		//convert bacteria data to canvas data so we can know where things are
+		/*
+			I cannot figure out these equations
+			X_clip = -1 + (2*x_canvas)/w
+			Y_clip = -1 + 2(h-y_canvas)/h
+		*/
+		let bacteriaX = (bacteria.x + 2/75 + 1)*300;
+		let bacteriaY = -1 * (bacteria.y-1) * 300 - 8; 
+		let r = (((bacteria.x + bacteria.r) + 2/75 + 1) * 300) - bacteriaX;
+		let num = 0;
+		let partColor = bacteria.color;
+
+		for(let x = 0; x < r; x++){
+			for(let y = 0; y < r; y++){
+				if(num % 2 == 0){
+					let partX = bacteriaX + x;
+					let partY = bacteriaY + y;
+					let partX2 = bacteriaX - x;
+					let partY2 = bacteriaY - y;
+
+					//create a particle for each quarter of the bacteria
+					let part = new Particle(partX, partY, 5, partColor);
+					parts.push(part);
+					part = new Particle(partX2, partY2, 5, partColor);
+					parts.push(part);
+					part = new Particle(partX, partY2, 5, partColor);
+					parts.push(part);
+					part = new Particle(partX2, partY, 5, partColor);
+					parts.push(part);
+
+				}
+				num++;
+			}
+		}
+
+	}
+
+	//////////////////////////////////
+	//		   Bacteria Class		//
+	//////////////////////////////////
+
+	class Bacteria {
+
+		//constructor for when id is specified
+		constructor(id){
+			this.id = id;
+			this.active = true;
+			this.buffer = 0; 
+		}
+
+		//method to randomly decide if int is positive or negative
+		randomizeInteger(num){
+			if(Math.random() >= 0.5){
+				num = num*-1;
+			}
+			return num;
+		}
+
+		//method for generating new random x and y values
+		newPointValues(){
+			this.angle = Math.random();
+			this.genX = this.randomizeInteger(r);
+			this.genY = this.randomizeInteger(r);
+			//determine which angle randomly
+			if(Math.random() >= 0.5){
+				this.trig = "cos";
+			}else{
+				this.trig = "sin";
+			}
+		}
+
+		genCircleValue(){
+			if (this.trig == "cos") {
+				this.x = this.genX*Math.cos(this.angle);
+				this.y = this.genY*Math.sin(this.angle);
+			} else {
+				this.x = this.genX*Math.sin(this.angle);
+				this.y = this.genY*Math.cos(this.angle);
+			}
+		}
+
+		//method for generating new bacteria circles
+		generate(){
+			this.r = 0.05;
+			//new random data for x and y
+			this.newPointValues();
+			//new x and y values along the game circle
+			this.genCircleValue();
+
+			//TODO: add in check for collision
+			//check to avoid infinite loops, if too many bacteria to generate new one -> skip
+			let attempt = 0;
+			//iterate through bacteria already generated
+			for(let i = 0; i<generatedBacteria.length; i++){
+				//check to avoid infinite loop
+				if(attempt > 500){
+					console.log("Not enough area for new bacteria");
+					break;
+				}
+
+				//if there is a collision we need to generate new data again
+				//ensure it will loop through all the bacteria again
+				if(isColliding(this.x, this.y, this.r, generatedBacteria[i].x, generatedBacteria[i].y, generatedBacteria[i].r)){
+					this.newPointValues();
+					this.genCircleValue();
+					attempt++;
+					//ensure it will loop through all bacteria again
+					i = -1;
+				}
+			}
+
+			
+			//generate new colours
+			this.color = [Math.random() * (0.45), Math.random() * (0.45), Math.random() * (0.45), 0.8];
+			this.poisoned = false;
+			genBact++;
+
+		}
+
+		show(){
+			var smooth = this.buffer / 50;
+			if (this.active) this.r = this.r + 0.0001 + (smooth);
+			this.buffer -= smooth;
+			
+			for (i in generatedBacteria) {
+				if (this.id == generatedBacteria[i].id);
+				else{
+					if (isColliding(this.x, this.y, this.r, generatedBacteria[i].x, generatedBacteria[i].y, generatedBacteria[i].r)) {
+						this.buffer = generatedBacteria[i].r;
+						generatedBacteria[i].delete();
+					}
+				}
+				
+			}
+		
+			drawCircle(this.x, this.y, this.r, this.color);
+		}
+
+		delete(){
+			this.r = 0;
+			this.x = 0;
+			this.y = 0;
+			this.active = false;
+			console.log("You sunk the battleship!");
+		}
+
+	}
+
+	//////////////////////////////////
+	//         Particle Class       //
+	//////////////////////////////////
+
+
+	class Particle{
+		constructor(x, y, r, color){
+			this.x = x;
+			this.y = y;
+			this.r = r + Math.random() * 5;
+			//using traditional javascript animation -> colour needs to be rgba
+			this.color ="rgba(" + Math.round((1*color[0]) * 255) + "," + Math.round((1*color[1]) * 255) + "," + Math.round((1*color[2]) * 255) + "," + Math.random()*0.95 + ")"
+			this.speed = {x: -1 + Math.random() *5, y: -1 + Math.random() * 2}
+			this.life = 20 + Math.random() * 10;
+		}
+		show(){
+			//draw if != life and its not too small
+			if(this.life > 0 && this.r > 0){
+				partCanvas.beginPath();
+				partCanvas.rect(this.x, this.y, this.r, Math.PI * 2);
+				partCanvas.fillStyle = this.color;
+				partCanvas.fill();
+
+				// Update data
+				this.life--;
+				this.r -= 0.60;
+				this.x += this.speed.x;
+				this.y += this.speed.y;
+			}
+		}
+	}
+
+	//////////////////////////////////
+	//            Clicking          //
+	//////////////////////////////////
+
+	canvas.onmousedown = function(e, canvas){click(e, gameSurface);};
+
+	function click(e, canvas) {
+		for (i in generatedBacteria) {
+			k = generatedBacteria[i]
+			var x = (e.clientX / canvas.clientWidth) * 2 - 1;
+			var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
+
+			console.log("Values are: " + x + " and " + y);
+
+			if (isColliding(x,y,0,k.x,k.y,k.r)) {
+				createExplosion(k);
+				k.delete();
+				break;
+			}
+			
+		}
+	}
 	
+	//////////////////////////////////
+	//       Initalize Game         //
+	//////////////////////////////////
+
+	for (i = 0; i < 10; i++) {
+		generatedBacteria.push(new Bacteria(genBact))
+		generatedBacteria[i].generate();
+	}
+
 	//////////////////////////////////
 	//            Drawing           //
-	//////////////////////////////////
-	
-	drawCircle(0,0,0.8,[1.0, 1.0, 1.0, 1.0]);
-	
+	//////////////////////////////////	
+
+	function gameplay() {
+		// Draw game surface
+		drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
+		for (i in generatedBacteria) {
+			generatedBacteria[i].show();
+		}
+		// Loop through all particles to draw
+		partCanvas.clearRect(0, 0, canvas.width, canvas.height);
+		for(i in parts) {
+			parts[i].show();
+		}
+		requestAnimationFrame(gameplay);
+	}
+	requestAnimationFrame(gameplay);
 }
