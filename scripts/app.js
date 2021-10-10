@@ -30,6 +30,7 @@ var vertexShaderText = [
 		let parts = [];
 		let arcCheck = (2*Math.PI*r)*(15/360);
 		let destroyedBacteria = 0;
+		let score = 0;
 
 let initGame = function(){
 
@@ -382,6 +383,14 @@ let initGame = function(){
 			console.log("Values are: " + x + " and " + y);
 
 			if (isColliding(x,y,0,k.x,k.y,k.r)) {
+				//increase score by factor of time -> radius
+				//the longer the amount of time the larger the points.
+				//1/radius of circle since radius is bigger over time will work.
+				console.log("score before: " + score);
+				console.log("radius: " + generatedBacteria[i].r)
+				console.log("difference: " + (score + Math.round(1/generatedBacteria[i].r)));
+				score += Math.round(1/generatedBacteria[i].r);
+				console.log("score after: " + score);
 				createExplosion(k);
 				k.delete();
 				break;
@@ -394,6 +403,7 @@ let initGame = function(){
 	//       Initalize Game         //
 	//////////////////////////////////
 	let lifeCounter = document.getElementById("lives");
+	let scoreCounter = document.getElementById("score");
 	let lives = 2;
 
 	for (i = 0; i < 10; i++) {
@@ -416,6 +426,7 @@ let initGame = function(){
 			for (i in generatedBacteria) {
 				generatedBacteria[i].show();
 				lifeCounter.innerHTML = lives;
+				scoreCounter.innerHTML = score;
 			}
 			// Loop through all particles to draw
 			partCanvas.clearRect(0, 0, canvas.width, canvas.height);
