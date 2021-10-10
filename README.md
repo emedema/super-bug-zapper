@@ -3,6 +3,10 @@ A simple game made with WebGL where you must click on the growing bacteria to 'i
 
 A 2D game developed for the COSC 414: Computer Graphics class at UBCO.
 
+## Contributors
+ - [Emily Medema](https://github.com/emedema)
+ - [Mason Plested](https://github.com/MasonPles)
+
 ## Project Checklist
 
 1. The playing field starts as a circular disk centered at the origin.
