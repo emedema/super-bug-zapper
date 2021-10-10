@@ -25,11 +25,14 @@ var vertexShaderText = [
 	//       Game Variables	         //
 	///////////////////////////////////
 		let r = 0.8;
-		var generatedBacteria = [];
+		let generatedBacteria = [];
 		let genBact = 0;
 		let parts = [];
+		let arcCheck = (2*Math.PI*r)*(15/360);
+		let destroyedBacteria = 0;
+		let score = 0;
 
-var initGame = function(){
+let initGame = function(){
 
     //////////////////////////////////
 	//       initialize WebGL       //
@@ -310,7 +313,13 @@ var initGame = function(){
 				}
 				
 			}
-		
+			
+
+			if (this.r >= arcCheck) {
+				lives--; 
+				this.delete();
+			}
+
 			drawCircle(this.x, this.y, this.r, this.color);
 		}
 
@@ -319,6 +328,7 @@ var initGame = function(){
 			this.x = 0;
 			this.y = 0;
 			this.active = false;
+			destroyedBacteria++;
 			console.log("You sunk the battleship!");
 		}
 
@@ -363,14 +373,24 @@ var initGame = function(){
 	canvas.onmousedown = function(e, canvas){click(e, gameSurface);};
 
 	function click(e, canvas) {
+
+		var x = (e.clientX / canvas.clientWidth) * 2 - 1;
+		var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
+
 		for (i in generatedBacteria) {
 			k = generatedBacteria[i]
-			var x = (e.clientX / canvas.clientWidth) * 2 - 1;
-			var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
 
 			console.log("Values are: " + x + " and " + y);
 
 			if (isColliding(x,y,0,k.x,k.y,k.r)) {
+				//increase score by factor of time -> radius
+				//the longer the amount of time the larger the points.
+				//1/radius of circle since radius is bigger over time will work.
+				console.log("score before: " + score);
+				console.log("radius: " + generatedBacteria[i].r)
+				console.log("difference: " + (score + Math.round(1/generatedBacteria[i].r)));
+				score += Math.round(1/generatedBacteria[i].r);
+				console.log("score after: " + score);
 				createExplosion(k);
 				k.delete();
 				break;
@@ -382,6 +402,9 @@ var initGame = function(){
 	//////////////////////////////////
 	//       Initalize Game         //
 	//////////////////////////////////
+	let lifeCounter = document.getElementById("lives");
+	let scoreCounter = document.getElementById("score");
+	let lives = 2;
 
 	for (i = 0; i < 10; i++) {
 		generatedBacteria.push(new Bacteria(genBact))
@@ -393,17 +416,28 @@ var initGame = function(){
 	//////////////////////////////////	
 
 	function gameplay() {
-		// Draw game surface
-		drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
-		for (i in generatedBacteria) {
-			generatedBacteria[i].show();
+		if (destroyedBacteria >= 10) {
+			document.getElementById("gameOver").style.color = "green";
+			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
 		}
-		// Loop through all particles to draw
-		partCanvas.clearRect(0, 0, canvas.width, canvas.height);
-		for(i in parts) {
-			parts[i].show();
+		if (lives > 0) {			
+			// Draw game surface
+			drawCircle(0,0,r,[0.0, 0.0, 0.0, 1.0]);
+			for (i in generatedBacteria) {
+				generatedBacteria[i].show();
+				lifeCounter.innerHTML = lives;
+				scoreCounter.innerHTML = score;
+			}
+			// Loop through all particles to draw
+			partCanvas.clearRect(0, 0, canvas.width, canvas.height);
+			for(i in parts) {
+				parts[i].show();
+			}
+			requestAnimationFrame(gameplay);
 		}
-		requestAnimationFrame(gameplay);
+		else if (lives <= 0) {
+			document.getElementById("gameOver").innerHTML = "Game over! Try again!";
+		}
 	}
 	requestAnimationFrame(gameplay);
 }
