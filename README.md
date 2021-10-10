@@ -20,7 +20,7 @@ hitting a button.
 6. [x] The game can randomly generate up to a fixed number (say 10) of different bacteria
 (each with a different color).
 7. [x] The bacteria appear as a crust on the circumference of the disk.
-8. [ ] The game gains points through the delays in the user responding and by any specific
+8. [x] The game gains points through the delays in the user responding and by any specific
 bacteria reaching a threshold (for example, a 30-degree arc).
 9. [x] The player wins if all bacteria are poisoned before any two different bacteria reach the
 threshold mentioned above.
