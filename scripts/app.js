@@ -426,6 +426,12 @@ let initGame = function(){
 		if (destroyedBacteria >= 10) {
 			document.getElementById("gameOver").style.color = "green";
 			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
+			endMess = document.getElementById("endMessage");
+			if(score<0){
+				endMess.innerHTML = "You won but at what cost??";
+			}else{
+				endMess.innerHTML = "You did really well! Won with a positive score: 10/10";
+			}
 		}
 		if (lives > 0) {			
 			// Draw game surface
