@@ -31,6 +31,7 @@ var vertexShaderText = [
 		let arcCheck = (2*Math.PI*r)*(15/360);
 		let destroyedBacteria = 0;
 		let score = 0;
+		let missedBact = 0;
 
 let initGame = function(){
 
@@ -317,6 +318,7 @@ let initGame = function(){
 
 			if (this.r >= arcCheck) {
 				lives--; 
+				score -= (missedBact + 20);
 				this.delete();
 			}
 
@@ -376,6 +378,7 @@ let initGame = function(){
 
 		var x = (e.clientX / canvas.clientWidth) * 2 - 1;
 		var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
+		let hit = false;
 
 		for (i in generatedBacteria) {
 			k = generatedBacteria[i]
@@ -392,10 +395,14 @@ let initGame = function(){
 				score += Math.round(1/generatedBacteria[i].r);
 				console.log("score after: " + score);
 				createExplosion(k);
+				hit = true;
 				k.delete();
 				break;
 			}
-			
+		}
+		if(!hit && destroyedBacteria != genBact){
+			missedBact++;
+			score -= (20 + missedBact);
 		}
 	}
 	
