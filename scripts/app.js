@@ -457,7 +457,7 @@ let initGame = function(){
 			endMess = document.getElementById("endMessage");
             endMess.innerHTML = "The Bacteria grew too large! You lose :(";
 			if(score > 0){
-				scoreCounter.innerHTML = 0;
+				scoreCounter.innerHTML = -1;
 			}
 
 		}
