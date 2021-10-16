@@ -423,6 +423,7 @@ let initGame = function(){
 	//////////////////////////////////	
 
 	function gameplay() {
+		console.log("destroyedBact: " + destroyedBacteria);
 		if (destroyedBacteria >= 10) {
 			document.getElementById("gameOver").style.color = "green";
 			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
@@ -449,6 +450,7 @@ let initGame = function(){
 			requestAnimationFrame(gameplay);
 		}
 		else if (lives <= 0) {
+			document.getElementById("gameOver").style.color = "red";
 			document.getElementById("gameOver").innerHTML = "Game over! Try again!";
 		}
 	}
