@@ -425,12 +425,14 @@ let initGame = function(){
 	function gameplay() {
 		console.log("destroyedBact: " + destroyedBacteria);
 		if (destroyedBacteria >= 10) {
-			document.getElementById("gameOver").style.color = "green";
-			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
 			endMess = document.getElementById("endMessage");
 			if(score<0){
-				endMess.innerHTML = "You won but at what cost??";
+				document.getElementById("gameOver").style.color = "red";
+				document.getElementById("gameOver").innerHTML = "Game over! Try again!";
+				endMess.innerHTML = "You eliminated all the bacteria, but your score is too low. :(";
 			}else{
+				document.getElementById("gameOver").style.color = "green";
+				document.getElementById("gameOver").innerHTML = "You win! Congrats!";
 				endMess.innerHTML = "You did really well! Won with a positive score: 10/10";
 			}
 		}
@@ -452,6 +454,12 @@ let initGame = function(){
 		else if (lives <= 0) {
 			document.getElementById("gameOver").style.color = "red";
 			document.getElementById("gameOver").innerHTML = "Game over! Try again!";
+			endMess = document.getElementById("endMessage");
+            endMess.innerHTML = "The Bacteria grew too large! You lose :(";
+			if(score > 0){
+				scoreCounter.innerHTML = 0;
+			}
+
 		}
 	}
 	requestAnimationFrame(gameplay);
