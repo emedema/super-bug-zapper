@@ -31,6 +31,7 @@ var vertexShaderText = [
 		let arcCheck = (2*Math.PI*r)*(15/360);
 		let destroyedBacteria = 0;
 		let score = 0;
+		let missedBact = 0;
 
 let initGame = function(){
 
@@ -317,6 +318,7 @@ let initGame = function(){
 
 			if (this.r >= arcCheck) {
 				lives--; 
+				score -= (missedBact + 20);
 				this.delete();
 			}
 
@@ -376,6 +378,7 @@ let initGame = function(){
 
 		var x = (e.clientX / canvas.clientWidth) * 2 - 1;
 		var y = (1 - (e.clientY / canvas.clientHeight)) * 2 - 1;
+		let hit = false;
 
 		for (i in generatedBacteria) {
 			k = generatedBacteria[i]
@@ -392,10 +395,14 @@ let initGame = function(){
 				score += Math.round(1/generatedBacteria[i].r);
 				console.log("score after: " + score);
 				createExplosion(k);
+				hit = true;
 				k.delete();
 				break;
 			}
-			
+		}
+		if(!hit && destroyedBacteria != genBact){
+			missedBact++;
+			score -= (20 + missedBact);
 		}
 	}
 	
@@ -416,9 +423,18 @@ let initGame = function(){
 	//////////////////////////////////	
 
 	function gameplay() {
+		console.log("destroyedBact: " + destroyedBacteria);
 		if (destroyedBacteria >= 10) {
-			document.getElementById("gameOver").style.color = "green";
-			document.getElementById("gameOver").innerHTML = "You win! Congrats!";
+			endMess = document.getElementById("endMessage");
+			if(score<0){
+				document.getElementById("gameOver").style.color = "red";
+				document.getElementById("gameOver").innerHTML = "Game over! Try again!";
+				endMess.innerHTML = "You eliminated all the bacteria, but your score is too low. :(";
+			}else{
+				document.getElementById("gameOver").style.color = "green";
+				document.getElementById("gameOver").innerHTML = "You win! Congrats!";
+				endMess.innerHTML = "You did really well! Won with a positive score: 10/10";
+			}
 		}
 		if (lives > 0) {			
 			// Draw game surface
@@ -436,7 +452,14 @@ let initGame = function(){
 			requestAnimationFrame(gameplay);
 		}
 		else if (lives <= 0) {
+			document.getElementById("gameOver").style.color = "red";
 			document.getElementById("gameOver").innerHTML = "Game over! Try again!";
+			endMess = document.getElementById("endMessage");
+            endMess.innerHTML = "The Bacteria grew too large! You lose :(";
+			if(score > 0){
+				scoreCounter.innerHTML = 0;
+			}
+
 		}
 	}
 	requestAnimationFrame(gameplay);
