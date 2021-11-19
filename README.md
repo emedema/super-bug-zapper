@@ -34,5 +34,3 @@ threshold mentioned above.
 ## How to Play
 
 This game is played online through the use of your computer's localhost.
-
-This game is not ready yet. This will be updated once it is ready to play.
